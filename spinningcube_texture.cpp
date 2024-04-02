@@ -8,6 +8,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 // GLM library to deal with matrix operations
 #include <glm/glm.hpp>
@@ -25,6 +27,7 @@ void render(double);
 GLuint shader_program = 0; // shader program to set render pipeline
 GLuint vao = 0; // Vertext Array Object to set input data
 GLint mv_location, proj_location; // Uniforms for transformation matrices
+GLuint texture = 0; // Texture to paste on polygon
 
 int main() {
   // start GL context and O/S window using the GLFW helper library
@@ -74,12 +77,17 @@ int main() {
 
     "out vec4 vs_color;"
 
+    "in vec2 tex_coord;"
+    "out vec2 vs_tex_coord;"
+    
     "uniform mat4 mv_matrix;"
     "uniform mat4 proj_matrix;"
 
     "void main() {"
     "  gl_Position = proj_matrix * mv_matrix * v_pos;"
     "  vs_color = v_pos * 2.0 + vec4(0.4, 0.4, 0.4, 0.0);"
+    
+    "  vs_tex_coord = tex_coord;"
     "}";
 
   // Fragment Shader
@@ -90,8 +98,12 @@ int main() {
 
     "in vec4 vs_color;"
 
+    "uniform sampler2D theTexture;"
+    "in vec2 vs_tex_coord;"
+
     "void main() {"
     "  frag_col = vs_color;"
+    "  frag_col = texture(theTexture, vs_tex_coord);"
     "}";
 
   // Shaders compilation
@@ -183,21 +195,45 @@ int main() {
     };
 
   // Vertex Buffer Object (for vertex coordinates)
-  GLuint vbo = 0;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  GLuint vbo[2];
+  glGenBuffers(2, vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
 
-  // Vertex attributes
-  // 0: vertex position (x, y, z)
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
   glEnableVertexAttribArray(0);
 
-  // Unbind vbo (it was conveniently registered by VertexAttribPointer)
+  glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
+
+  // Vertex attributes
+  // 0: vertex position (x, y, z)
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glEnableVertexAttribArray(1);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  // Unbind vao
   glBindVertexArray(0);
+
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  int width, height, nrChannels;
+  stbi_set_flip_vertically_on_load(1);
+  unsigned char *data = stbi_load("texture.jpg", &width, &height, &nrChannels, 0);
+  if (data) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  } else {
+    printf("Failed to load texture\n");
+  }
+
+  stbi_image_free(data);
 
   // Uniforms
   // - Model-View matrix
@@ -231,6 +267,8 @@ void render(double currentTime) {
 
   glUseProgram(shader_program);
   glBindVertexArray(vao);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
 
   glm::mat4 mv_matrix, proj_matrix;
 
