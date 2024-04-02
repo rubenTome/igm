@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "glew.h": "c",
+        "type_ptr.hpp": "c",
+        "stb_image.h": "c"
+    }
+}
