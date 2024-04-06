@@ -102,8 +102,10 @@ int main() {
     "in vec2 vs_tex_coord;"
 
     "void main() {"
-    "  frag_col = vs_color;"
-    "  frag_col = texture(theTexture, vs_tex_coord);"
+    "  if (vs_tex_coord == vec2(0.0, 0.0))"
+    "    frag_col = vs_color;"
+    "  else"
+    "    frag_col = texture(theTexture, vs_tex_coord);"
     "}";
 
   // Shaders compilation
@@ -188,10 +190,14 @@ int main() {
   };
 
   float texCoords[] = {
+    0.0f, 1.0f,
+    1.0f, 1.0f,
     0.0f, 0.0f,
     1.0f, 0.0f,
+
+    0.0f, 0.0f,
     1.0f, 1.0f,
-    0.0f, 1.0f
+
     };
 
   // Vertex Buffer Object (for vertex coordinates)
@@ -225,7 +231,7 @@ int main() {
 
   int width, height, nrChannels;
   stbi_set_flip_vertically_on_load(1);
-  unsigned char *data = stbi_load("texture.jpg", &width, &height, &nrChannels, 0);
+  unsigned char *data = stbi_load("watchmen_smiley.png", &width, &height, &nrChannels, 0);
   if (data) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
