@@ -1,9 +1,4 @@
-// Copyright (C) 2021 Emilio J. Padrón
-// Released as Free Software under the X11 License
-// https://spdx.org/licenses/X11.html
-//
-// Strongly inspired by spinnycube.cpp in OpenGL Superbible
-// https://github.com/openglsuperbible
+//Authors: Mauro García Barro and Rubén Tomé Moure
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -41,7 +36,7 @@ int main() {
   //  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   //  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(gl_width, gl_height, "My spinning cube", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(gl_width, gl_height, "My spinning cube with one-faced texture", NULL, NULL);
   if (!window) {
     fprintf(stderr, "ERROR: could not open window with GLFW3\n");
     glfwTerminate();
@@ -91,6 +86,8 @@ int main() {
     "}";
 
   // Fragment Shader
+  // We draw the texture if the vertex has a valuable texcord (i.e is not 0.0, 0.0)
+  // Otherwise, draw the original color
   const char* fragment_shader =
     "#version 130\n"
 
@@ -190,11 +187,13 @@ int main() {
   };
 
   float texCoords[] = {
+    // (1,0,2) Triangle
     0.0f, 1.0f,
     1.0f, 1.0f,
     0.0f, 0.0f,
-    1.0f, 0.0f,
 
+    // (3,2,0) Triangle
+    1.0f, 0.0f,
     0.0f, 0.0f,
     1.0f, 1.0f,
 
