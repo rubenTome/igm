@@ -1,9 +1,4 @@
-// Copyright (C) 2021 Emilio J. Padrón
-// Released as Free Software under the X11 License
-// https://spdx.org/licenses/X11.html
-//
-// Strongly inspired by spinnycube.cpp in OpenGL Superbible
-// https://github.com/openglsuperbible
+//Authors: Mauro García Barro and Rubén Tomé Moure
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -41,7 +36,7 @@ int main() {
   //  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   //  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(gl_width, gl_height, "My spinning cube", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(gl_width, gl_height, "My spinning cube with one-faced texture", NULL, NULL);
   if (!window) {
     fprintf(stderr, "ERROR: could not open window with GLFW3\n");
     glfwTerminate();
@@ -91,6 +86,8 @@ int main() {
     "}";
 
   // Fragment Shader
+  // We draw the texture if the vertex has a valuable texcord (i.e is not 0.0, 0.0)
+  // Otherwise, draw the original color
   const char* fragment_shader =
     "#version 130\n"
 
@@ -102,8 +99,10 @@ int main() {
     "in vec2 vs_tex_coord;"
 
     "void main() {"
-    "  frag_col = vs_color;"
-    "  frag_col = texture(theTexture, vs_tex_coord);"
+    "  if (vs_tex_coord == vec2(0.0, 0.0))"
+    "    frag_col = vs_color;"
+    "  else"
+    "    frag_col = texture(theTexture, vs_tex_coord);"
     "}";
 
   // Shaders compilation
@@ -188,8 +187,14 @@ int main() {
   };
 
   float texCoords[] = {
+    // (1,0,2) Triangle
+    0.0f, 1.0f,
+    1.0f, 1.0f,
     0.0f, 0.0f,
+
+    // (3,2,0) Triangle
     1.0f, 0.0f,
+    0.0f, 0.0f,
     1.0f, 1.0f,
     0.0f, 1.0f,
     };
@@ -225,7 +230,7 @@ int main() {
 
   int width, height, nrChannels;
   stbi_set_flip_vertically_on_load(1);
-  unsigned char *data = stbi_load("texture.jpg", &width, &height, &nrChannels, 0);
+  unsigned char *data = stbi_load("watchmen_smiley.png", &width, &height, &nrChannels, 0);
   if (data) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
