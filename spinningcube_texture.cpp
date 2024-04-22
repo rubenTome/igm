@@ -191,7 +191,7 @@ int main() {
     0.0f, 0.0f,
     1.0f, 0.0f,
     1.0f, 1.0f,
-    0.0f, 1.0f
+    0.0f, 1.0f,
     };
 
   // Vertex Buffer Object (for vertex coordinates)
