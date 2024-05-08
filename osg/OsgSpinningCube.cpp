@@ -7,6 +7,8 @@
 #include <osg/MatrixTransform>
 #include <osgUtil/Optimizer>
 #include <osgDB/WriteFile>
+#include <osg/PositionAttitudeTransform>
+
 
 osg::Geometry* generateCube(float size) {
     
@@ -63,6 +65,27 @@ int main() {
     geode->addDrawable(cubeGeometry.get());
     secondGeode-> addDrawable(secondCubeGeometry.get());
     
+    //Generamos el cubo de luz
+    osg::ref_ptr<osg::Light> light = new osg::Light;
+    light->setLightNum(1);
+    light->setPosition(osg::Vec4(0.0, 0.0, 0.0, 1.0));
+    light->setDiffuse(osg::Vec4(0.0, 1.0, 0.0, 1.0));
+    
+    
+    
+    osg::ref_ptr<osg::Geode> lightGeode = new osg::Geode;
+    osg::ref_ptr<osg::Geometry> lightGeometry = generateCube(0.25f);
+    lightGeode->addDrawable(lightGeometry);
+    
+    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+    lightSource->setLight(light);
+    
+    osg::ref_ptr<osg::PositionAttitudeTransform> lightPAT = new osg::PositionAttitudeTransform;
+    lightPAT->setPosition(osg::Vec3(5.0, 10.0, 2.5));
+    lightPAT->setScale(osg::Vec3(0.2, 0.2, 0.2));
+    lightPAT->addChild(lightSource);
+    
+    
     
     // Generamos textura
     osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D;
@@ -98,6 +121,12 @@ int main() {
     osg::ref_ptr<osg::Group> root = new osg::Group;
     root->addChild(rotationTransform.get());
     root->addChild(secondRotationTransform.get());
+    
+    root->addChild(lightGeode);
+    root->addChild(lightPAT);
+    
+    osg::ref_ptr<osg::StateSet> ss = root->getOrCreateStateSet();
+    ss->setMode(GL_LIGHT1, osg::StateAttribute::ON);
 
     // Visor con manipulación de cámara y escena
     osgViewer::Viewer viewer;
