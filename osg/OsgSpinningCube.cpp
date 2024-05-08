@@ -24,6 +24,17 @@ osg::Geometry* generateCube(float size) {
     // Creamos la geometría que contenga dicho array
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     geom->setVertexArray(vertices.get());
+    
+    // Definimos las coordenadas de textura de los vértices
+    osg::ref_ptr<osg::Vec2Array> texCoords = new osg::Vec2Array(24);
+    (*texCoords)[0].set(0.0, 0.0); (*texCoords)[1].set(1.0, 0.0); (*texCoords)[2].set(1.0, 1.0); (*texCoords)[3].set(0.0, 1.0);
+    (*texCoords)[4].set(0.0, 0.0); (*texCoords)[5].set(1.0, 0.0); (*texCoords)[6].set(1.0, 1.0); (*texCoords)[7].set(0.0, 1.0);
+    (*texCoords)[8].set(0.0, 0.0); (*texCoords)[9].set(1.0, 0.0); (*texCoords)[10].set(1.0, 1.0); (*texCoords)[11].set(0.0, 1.0);
+    (*texCoords)[12].set(0.0, 0.0); (*texCoords)[13].set(1.0, 0.0); (*texCoords)[14].set(1.0, 1.0); (*texCoords)[15].set(0.0, 1.0);
+    (*texCoords)[16].set(0.0, 0.0); (*texCoords)[17].set(1.0, 0.0); (*texCoords)[18].set(1.0, 1.0); (*texCoords)[19].set(0.0, 1.0);
+    (*texCoords)[20].set(0.0, 0.0); (*texCoords)[21].set(1.0, 0.0); (*texCoords)[22].set(1.0, 1.0); (*texCoords)[23].set(0.0, 1.0);
+    
+    geom->setTexCoordArray(0, texCoords.get(), osg::Array::BIND_PER_VERTEX);
 
     
     // Creamos las caras del cubo
@@ -51,8 +62,25 @@ int main() {
     osg::ref_ptr<osg::Geode> secondGeode = new osg::Geode;
     geode->addDrawable(cubeGeometry.get());
     secondGeode-> addDrawable(secondCubeGeometry.get());
+    
+    
+    // Generamos textura
+    osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D;
+    osg::ref_ptr<osg::Image> image = osgDB::readImageFile("texture.jpeg");
+    if (image) {
+    	texture->setImage(image.get());
+    	texture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::REPEAT);
+    	texture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::REPEAT);
+    } else {
+    	std::cerr << "Error al cargar la textura" << std::endl;
+    	return 1;
+    }
+    
+    // Asignamos la textura al cubo
+    cubeGeometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture.get());
+    secondCubeGeometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture.get());
 
-    // Creamos la matriz para la rotación
+   // Creamos la matriz para la rotación
     osg::ref_ptr<osg::MatrixTransform> rotationTransform = new osg::MatrixTransform;
     osg::ref_ptr<osg::MatrixTransform> secondRotationTransform = new osg::MatrixTransform;
     rotationTransform->addChild(geode.get());
